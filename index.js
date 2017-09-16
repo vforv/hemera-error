@@ -54,9 +54,9 @@ L.describe('Math', function () {
                     query: { email: userPeyload.email }
                 }, (err, resp) => {
                     if (err) {
-                        done(err);
+                        cb(err);
                     }
-
+                    console.log('HELLO')
                     if (resp.result.length === 0) {
 
                         hemera.act({
@@ -66,17 +66,17 @@ L.describe('Math', function () {
                             data: user
                         }, (err, resp) => {
                             if (err) {
-                                done(null, err);
+                                cb(null, err);
                             }
 
                             //TODO: call mail service here
-                            done(null, 'We sent you activation link to the mail.');
+                            cb(null, 'We sent you activation link to the mail.');
                         })
 
                     } else {
                         const UnauthorizedError = hemera.createError("Unauthorized");
                         const mess = new UnauthorizedError("User already exists.");
-                        done(mess);
+                        cb(mess);
                     }
                 })
             });
@@ -98,21 +98,34 @@ L.describe('Math', function () {
             // stub act calls
             actStub.stub({
                 topic: 'mongo-store',
-                cmd: 'create',
-                collection: 'users',
-                data: userData
-            }, null, "Mail sent")
-
-            actStub.stub({
-                topic: 'mongo-store',
                 cmd: 'find',
                 collection: 'users',
                 query: { email: 'vladimir@some.com' }
             }, null, { result: [] })
 
-            // Important run it when "add" was already added
-            // Should execute the server method with the pattern topic:math,cmd:add,a:100,b:200"
-            AddStub.run(hemera, { topic: 'user', cmd: 'login' }, { user: userData }, function (err, result) {
+            actStub.stub({
+                topic: 'mongo-store',
+                cmd: 'create',
+                collection: 'users',
+                data: userData
+            }, null, "Mail sent")
+
+            AddStub.run(hemera, { topic: 'user', cmd: 'login' }, {
+                user: {
+                    firstName: 'Vladimir',
+                    lastName: 'Djukic',
+                    email: 'vladimir@some.com',
+                    password: 'hash',
+                    phone: '123123123',
+                    role: ['admin'],
+                    address: 'Cuk br.3',
+                    city: 'Berane',
+                    state: 'IL',
+                    country: 'MNT',
+                    zip: '123',
+                    bankId: '123'
+                }
+            }, function (err, result) {
 
                 done()
             })
