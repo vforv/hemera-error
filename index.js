@@ -34,77 +34,30 @@ L.describe('Math', function () {
 
                 bcrypt.hash('test123', 10).then((hash) => {
                     let user = {
-                        firstName: userPeyload.firstName,
-                        lastName: userPeyload.lastName,
-                        email: userPeyload.email,
-                        password: hash,
-                        phone: userPeyload.phone,
-                        role: userPeyload.role,
-                        address: userPeyload.address,
-                        city: userPeyload.city,
-                        state: userPeyload.state,
-                        country: userPeyload.country,
-                        zip: userPeyload.zip,
-                        bankId: userPeyload.bankId
+                        hash: hash
                     }
 
                     hemera.act({
                         topic: 'mongo-store',
-                        cmd: 'find',
+                        cmd: 'create',
                         collection: 'users',
-                        query: { email: userPeyload.email }
+                        data: user
                     }, (err, resp) => {
                         if (err) {
-                            cb(err);
+                            cb(null, err);
                         }
-
-                        if (resp.result.length === 0) {
-
-                            hemera.act({
-                                topic: 'mongo-store',
-                                cmd: 'create',
-                                collection: 'users',
-                                data: user
-                            }, (err, resp) => {
-                                if (err) {
-                                    cb(null, err);
-                                }
-                                console.log(hash)
-                                //TODO: call mail service here
-                                cb(null, 'We sent you activation link to the mail.');
-                            })
-
-                        } else {
-                            const UnauthorizedError = hemera.createError("Unauthorized");
-                            const mess = new UnauthorizedError("User already exists.");
-                            cb(mess);
-                        }
+                        console.log(hash)
+                        //TODO: call mail service here
+                        cb(null, 'We sent you activation link to the mail.');
                     })
                 })
             });
 
-            
+
             const userData = {
-                firstName: 'Vladimir',
-                lastName: 'Djukic',
-                email: 'vladimir@some.com',
-                password: 'hash',
-                phone: '123123123',
-                role: ['admin'],
-                address: 'Cuk br.3',
-                city: 'Berane',
-                state: 'IL',
-                country: 'MNT',
-                zip: '123',
-                bankId: '123'
+                hash: 'somehash'
             }
             // stub act calls
-            actStub.stub({
-                topic: 'mongo-store',
-                cmd: 'find',
-                collection: 'users',
-                query: { email: 'vladimir@some.com' }
-            }, null, { result: [] })
 
             actStub.stub({
                 topic: 'mongo-store',
