@@ -12,6 +12,7 @@ const Code = require('code')
 const lab = require('lab');
 const expect = Code.expect
 const L = exports.lab = lab.script();
+const bcrypt = require('bcrypt')
 
 L.describe('Math', function () {
     L.it('Should do some math operations', function (done) {
@@ -31,56 +32,58 @@ L.describe('Math', function () {
 
                 let userPeyload = msg.user;
 
-
-                let user = {
-                    firstName: userPeyload.firstName,
-                    lastName: userPeyload.lastName,
-                    email: userPeyload.email,
-                    password: 'hash',
-                    phone: userPeyload.phone,
-                    role: userPeyload.role,
-                    address: userPeyload.address,
-                    city: userPeyload.city,
-                    state: userPeyload.state,
-                    country: userPeyload.country,
-                    zip: userPeyload.zip,
-                    bankId: userPeyload.bankId
-                }
-
-                hemera.act({
-                    topic: 'mongo-store',
-                    cmd: 'find',
-                    collection: 'users',
-                    query: { email: userPeyload.email }
-                }, (err, resp) => {
-                    if (err) {
-                        cb(err);
+                bcrypt.hash('test123', 10).then((hash) => {
+                    let user = {
+                        firstName: userPeyload.firstName,
+                        lastName: userPeyload.lastName,
+                        email: userPeyload.email,
+                        password: hash,
+                        phone: userPeyload.phone,
+                        role: userPeyload.role,
+                        address: userPeyload.address,
+                        city: userPeyload.city,
+                        state: userPeyload.state,
+                        country: userPeyload.country,
+                        zip: userPeyload.zip,
+                        bankId: userPeyload.bankId
                     }
-                    console.log('HELLO')
-                    if (resp.result.length === 0) {
 
-                        hemera.act({
-                            topic: 'mongo-store',
-                            cmd: 'create',
-                            collection: 'users',
-                            data: user
-                        }, (err, resp) => {
-                            if (err) {
-                                cb(null, err);
-                            }
+                    hemera.act({
+                        topic: 'mongo-store',
+                        cmd: 'find',
+                        collection: 'users',
+                        query: { email: userPeyload.email }
+                    }, (err, resp) => {
+                        if (err) {
+                            cb(err);
+                        }
 
-                            //TODO: call mail service here
-                            cb(null, 'We sent you activation link to the mail.');
-                        })
+                        if (resp.result.length === 0) {
 
-                    } else {
-                        const UnauthorizedError = hemera.createError("Unauthorized");
-                        const mess = new UnauthorizedError("User already exists.");
-                        cb(mess);
-                    }
+                            hemera.act({
+                                topic: 'mongo-store',
+                                cmd: 'create',
+                                collection: 'users',
+                                data: user
+                            }, (err, resp) => {
+                                if (err) {
+                                    cb(null, err);
+                                }
+                                console.log(hash)
+                                //TODO: call mail service here
+                                cb(null, 'We sent you activation link to the mail.');
+                            })
+
+                        } else {
+                            const UnauthorizedError = hemera.createError("Unauthorized");
+                            const mess = new UnauthorizedError("User already exists.");
+                            cb(mess);
+                        }
+                    })
                 })
             });
 
+            
             const userData = {
                 firstName: 'Vladimir',
                 lastName: 'Djukic',
