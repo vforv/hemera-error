@@ -23,6 +23,7 @@ L.describe('Math', function () {
         const actStub = new ActStub(hemera)
 
         hemera.ready(function () {
+            //ACTION PART
             this.add({
                 topic: 'user',
                 cmd: 'login'
@@ -37,27 +38,28 @@ L.describe('Math', function () {
                         hash: hash
                     }
 
+                    //THIS ACTION NEVER RUN
                     hemera.act({
                         topic: 'mongo-store',
                         cmd: 'create',
                         collection: 'users',
-                        data: user
+                        data: user //HERE IS THE PROBLEM
                     }, (err, resp) => {
                         if (err) {
                             cb(null, err);
                         }
-                        console.log(hash)
-                        //TODO: call mail service here
+
+                        
+                        console.log(hash);
                         cb(null, 'We sent you activation link to the mail.');
                     })
                 })
             });
 
-
+            //TEST PART 
             const userData = {
                 hash: 'somehash'
             }
-            // stub act calls
 
             actStub.stub({
                 topic: 'mongo-store',
@@ -66,22 +68,7 @@ L.describe('Math', function () {
                 data: userData
             }, null, "Mail sent")
 
-            AddStub.run(hemera, { topic: 'user', cmd: 'login' }, {
-                user: {
-                    firstName: 'Vladimir',
-                    lastName: 'Djukic',
-                    email: 'vladimir@some.com',
-                    password: 'hash',
-                    phone: '123123123',
-                    role: ['admin'],
-                    address: 'Cuk br.3',
-                    city: 'Berane',
-                    state: 'IL',
-                    country: 'MNT',
-                    zip: '123',
-                    bankId: '123'
-                }
-            }, function (err, result) {
+            AddStub.run(hemera, { topic: 'user', cmd: 'login' }, {}, function (err, result) {
 
                 done()
             })
